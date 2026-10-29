@@ -1,6 +1,7 @@
+
 #!/usr/bin/env bash
 
-# Settings
+# Default settings
 DEST="$HOME/backups"
 KEEP=5
 
@@ -16,7 +17,7 @@ Options:
   -h        Show this help message
 
 Exit codes:
-  0  Success
+  0  Success or help displayed
   1  Backup or filesystem operation failed
   2  Invalid usage or invalid KEEP value
 EOF
@@ -55,24 +56,41 @@ rotate_backups() {
     local folder_name="$2"
     local keep="$3"
     local file
+    local base
+    local timestamp
     local -a archives=()
+    local -a valid_archives=()
 
-    # Enable matching an empty glob as an empty array.
     shopt -s nullglob
     archives=( "$destination/$folder_name-"*.tar.gz )
     shopt -u nullglob
 
-    # If no backups exist yet, nothing to sort or rotate.
-    [[ ${#archives[@]} -eq 0 ]] && return 0
+    # Keep only files with the exact expected timestamp format.
+    for file in "${archives[@]}"; do
+        base="${file##*/}"
+        timestamp="${base#"$folder_name"-}"
 
-    # Filenames contain sortable timestamps.
-    # Fixed: Replaced process substitution with a here-string to avoid subshell exit code traps.
-    mapfile -t archives <<< "$(printf '%s\n' "${archives[@]}" | sort -r)"
+        if [[ "$base" == "$folder_name-"* &&
+              "$timestamp" =~ ^[0-9]{8}-[0-9]{6}\.tar\.gz$ ]]; then
+            valid_archives+=( "$file" )
+        fi
+    done
 
-    # Delete archives beyond the KEEP limit.
-    for (( i = keep; i < ${#archives[@]}; i++ )); do
-        file="${archives[$i]}"
-        if [[ -n "$file" ]] && ! rm -- "$file"; then
+    # Nothing to rotate if there are no valid backup files.
+    if ((${#valid_archives[@]} == 0)); then
+        return 0
+    fi
+
+    # Newest timestamps sort first in reverse lexical order.
+    mapfile -t valid_archives < <(
+        printf '%s\n' "${valid_archives[@]}" | sort -r
+    )
+
+    # Delete backups beyond the KEEP limit.
+    for ((i = keep; i < ${#valid_archives[@]}; i++)); do
+        file="${valid_archives[$i]}"
+
+        if ! rm -- "$file"; then
             die 1 "Could not remove old backup: $file"
         fi
     done
@@ -84,7 +102,6 @@ main() {
     local folder_name
     local archive
     local destination
-
     local OPTIND=1
     local OPTARG
     local option
@@ -129,7 +146,6 @@ main() {
         die 1 "SOURCE is not an existing directory: $source"
     fi
 
-    # Resolve SOURCE to an absolute physical path.
     source_path=$(cd -- "$source" && pwd -P) ||
         die 1 "Could not resolve SOURCE."
 
