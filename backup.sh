@@ -62,15 +62,17 @@ rotate_backups() {
     archives=( "$destination/$folder_name-"*.tar.gz )
     shopt -u nullglob
 
+    # If no backups exist yet, nothing to sort or rotate.
+    [[ ${#archives[@]} -eq 0 ]] && return 0
+
     # Filenames contain sortable timestamps.
-    mapfile -t archives < <(
-        printf '%s\n' "${archives[@]}" | sort -r
-    )
+    # Fixed: Replaced process substitution with a here-string to avoid subshell exit code traps.
+    mapfile -t archives <<< "$(printf '%s\n' "${archives[@]}" | sort -r)"
 
     # Delete archives beyond the KEEP limit.
     for (( i = keep; i < ${#archives[@]}; i++ )); do
         file="${archives[$i]}"
-        if ! rm -- "$file"; then
+        if [[ -n "$file" ]] && ! rm -- "$file"; then
             die 1 "Could not remove old backup: $file"
         fi
     done
