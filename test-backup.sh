@@ -1,4 +1,3 @@
-
 #!/usr/bin/env bash
 
 echo "===== TEST 1: Missing source (expect 2) ====="
