@@ -55,12 +55,6 @@ Laptops get stolen, hard drives die, and files get deleted by mistake. Manual co
 
 ---
 
-## 🔗 Repository
-
-[GitHub: https://github.com/Mecaly-kjr/bash-07-backup-tool]
-
----
-
 ## ⚙ Installation & Setup
 
 ```bash
