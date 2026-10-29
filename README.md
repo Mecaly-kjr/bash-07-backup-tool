@@ -49,9 +49,9 @@ Laptops get stolen, hard drives die, and files get deleted by mistake. Manual co
 
 ## 📷 Screenshots
 
-![alt text](<assets/images/Screenshot From 2026-10-29 13-50-15 (Copy).png>)
-![alt text](<assets/images/Screenshot From 2026-10-29 13-50-32.png>)
+ ![alt text](<assets/images/Screenshot From 2026-10-29 13-50-32.png>)
  ![alt text](<assets/images/Screenshot From 2026-10-29 13-50-54.png>)
+ ![alt text](<assets/images/Screenshot From 2026-10-29 15-20-57.png>)
 
 ---
 
